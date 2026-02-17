@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Gestion Étudiants</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #151820;
+      --border: #1f2330;
+      --accent: #5cffb0;
+      --accent2: #5c8fff;
+      --text: #e8eaf0;
+      --muted: #6b7080;
+      --danger: #ff5c7a;
+      --card-bg: #181c28;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 20px;
+      background-image:
+        radial-gradient(ellipse at 10% 0%, rgba(92,255,176,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 100%, rgba(92,143,255,0.06) 0%, transparent 50%);
+    }
+
+    .container { max-width: 860px; margin: 0 auto; }
+
+    header {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 48px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .logo {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+
+    header h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
+    header h1 span { color: var(--accent); }
+
+    .tag {
+      margin-left: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem; color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 4px 10px; border-radius: 999px;
+    }
+
+    .card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px; margin-bottom: 32px;
+      animation: fadeUp 0.5s ease both; animation-delay: 0.1s;
+    }
+
+    .card-title {
+      font-size: 0.75rem; font-family: 'DM Mono', monospace;
+      color: var(--accent); letter-spacing: 0.12em;
+      text-transform: uppercase; margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 12px; align-items: end;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+
+    label {
+      font-size: 0.72rem; color: var(--muted);
+      font-family: 'DM Mono', monospace; letter-spacing: 0.05em;
+    }
+
+    input {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-family: 'DM Mono', monospace; font-size: 0.88rem;
+      padding: 10px 14px; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(92, 255, 176, 0.08);
+    }
+
+    input::placeholder { color: var(--muted); }
+
+    .btn {
+      padding: 10px 20px; border: none; border-radius: 8px;
+      font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: transform 0.15s, opacity 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: var(--accent); color: #0d0f14;
+      box-shadow: 0 0 20px rgba(92,255,176,0.2);
+    }
+
+    #toast {
+      position: fixed; top: 20px; right: 20px;
+      padding: 12px 20px; border-radius: 8px;
+      font-family: 'DM Mono', monospace; font-size: 0.82rem;
+      opacity: 0; transform: translateY(-10px);
+      transition: all 0.3s ease; z-index: 999; pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.success { background: rgba(92,255,176,0.15); border: 1px solid var(--accent); color: var(--accent); }
+    #toast.error { background: rgba(255,92,122,0.15); border: 1px solid var(--danger); color: var(--danger); }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; animation: fadeUp 0.5s ease both; animation-delay: 0.2s;
+    }
+
+    .section-title {
+      font-size: 0.75rem; font-family: 'DM Mono', monospace;
+      color: var(--accent2); letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    .count-badge {
+      font-family: 'DM Mono', monospace; font-size: 0.72rem;
+      color: var(--muted); background: var(--surface);
+      border: 1px solid var(--border); padding: 3px 10px; border-radius: 999px;
+    }
+
+    .table-wrapper {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      animation: fadeUp 0.5s ease both; animation-delay: 0.25s;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead tr { background: var(--surface); border-bottom: 1px solid var(--border); }
+
+    th {
+      text-align: left; padding: 14px 20px;
+      font-family: 'DM Mono', monospace; font-size: 0.68rem;
+      color: var(--muted); letter-spacing: 0.1em;
+      text-transform: uppercase; font-weight: 500;
+    }
+
+    td { padding: 14px 20px; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background 0.15s; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    .id-cell { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--muted); }
+    .email-cell { font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--accent2); }
+
+    .empty { text-align: center; padding: 56px 20px; color: var(--muted); }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty p { font-size: 0.88rem; font-family: 'DM Mono', monospace; }
+
+    .loader { text-align: center; padding: 40px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.82rem; }
+
+    .spinner {
+      width: 24px; height: 24px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes rowIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    .row-animate { animation: rowIn 0.3s ease both; }
+
+    @media (max-width: 640px) {
+      .form-row { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+<div id="toast"></div>
+<div class="container">
+
+    <header>
+        <div class="logo">🎓</div>
+        <h1>Étudiants <span>Manager</span></h1>
+        <span class="tag">localhost:8080</span>
+    </header>
+
+    <div class="card">
+        <div class="card-title">// Ajouter un étudiant</div>
+        <div class="form-row">
+            <div class="field">
+                <label>NOM</label>
+                <input type="text" id="nom" placeholder="Dupont" />
+            </div>
+            <div class="field">
+                <label>PRÉNOM</label>
+                <input type="text" id="prenom" placeholder="Marie" />
+            </div>
+            <div class="field">
+                <label>EMAIL</label>
+                <input type="email" id="email" placeholder="marie@mail.com" />
+            </div>
+            <button class="btn btn-primary" onclick="addStudent()">+ Ajouter</button>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <span class="section-title">// Liste des étudiants</span>
+        <span class="count-badge" id="count">— étudiants</span>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>#ID</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Email</th>
+            </tr>
+            </thead>
+            <tbody id="student-list">
+            <tr><td colspan="4"><div class="loader"><div class="spinner"></div>Chargement...</div></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    const API = 'http://localhost:8080/students';
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `show ${type}`;
+      setTimeout(() => { t.className = ''; }, 3000);
+    }
+
+    async function loadStudents() {
+      try {
+        const res = await fetch(API);
+        if (!res.ok) throw new Error();
+        const students = await res.json();
+        renderStudents(students);
+      } catch (e) {
+        document.getElementById('student-list').innerHTML = `
+          <tr><td colspan="4">
+            <div class="empty">
+              <div class="empty-icon">⚠️</div>
+              <p>Impossible de contacter l'API.<br/>Vérifie que Spring Boot tourne sur le port 8080.</p>
+            </div>
+          </td></tr>`;
+        document.getElementById('count').textContent = '— étudiants';
+      }
+    }
+
+    function renderStudents(students) {
+      const tbody = document.getElementById('student-list');
+      document.getElementById('count').textContent =
+        `${students.length} étudiant${students.length !== 1 ? 's' : ''}`;
+
+      if (students.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="4">
+            <div class="empty">
+              <div class="empty-icon">📭</div>
+              <p>Aucun étudiant pour l'instant.</p>
+            </div>
+          </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = students.map((s, i) => `
+        <tr class="row-animate" style="animation-delay: ${i * 0.05}s">
+          <td class="id-cell">#${s.id}</td>
+          <td>${s.nom}</td>
+          <td>${s.prenom}</td>
+          <td class="email-cell">${s.email}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function addStudent() {
+      const nom    = document.getElementById('nom').value.trim();
+      const prenom = document.getElementById('prenom').value.trim();
+      const email  = document.getElementById('email').value.trim();
+
+      if (!nom || !prenom || !email) {
+        showToast('Tous les champs sont requis.', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom, prenom, email })
+        });
+        if (!res.ok) throw new Error();
+
+        document.getElementById('nom').value = '';
+        document.getElementById('prenom').value = '';
+        document.getElementById('email').value = '';
+
+        showToast('Étudiant ajouté avec succès !', 'success');
+        loadStudents();
+      } catch (e) {
+        showToast("Erreur lors de l'ajout.", 'error');
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addStudent();
+    });
+
+    loadStudents();
+  </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+services:
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-etudiant
+    environment:
+      POSTGRES_DB: students_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - etudiant-network
+
+  backend:
+    build: .
+    container_name: spring-etudiant
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/students_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: pass123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - postgres
+    networks:
+      - etudiant-network
+
+volumes:
+  postgres-data:
+
+networks:
+  etudiant-network:
+    driver: bridge
