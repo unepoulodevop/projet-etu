@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: votre-dockerhub-username/etudiant-backend:latest
+          image: unepoulodevop/etudiant-backend:latest
           ports:
             - containerPort: 8080
           env:
