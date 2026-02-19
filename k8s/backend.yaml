@@ -16,7 +16,7 @@ spec:
         - name: backend
           image: unepoulodevop/etudiant-backend:latest
           ports:
-            - containerPort: 8090
+            - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://postgres:5432/students_db
